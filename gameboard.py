@@ -8,80 +8,70 @@ import curses
 snake_body = 'x'                                      #ASCI symbol representing snakes body
 snake_food = '@'                                      #ASCI symbol representing apple
 heads_from = {(1,0):'v', (-1,0):'^',                  #snakes head
-            (0,-1):'<', (0,1):'>'}                    #snaked head
+            (0,-1):'<', (0,1):'>'}                    #from diffrent angles 
 
 class GameBoard(object):
-    '''
-    Class containing actual gameboard and all methods which prints anything
-    on curses-based window.
+    '''Class containing gameboard and methods for printing in curses
     '''
 
     def __init__(self, screen):
+        '''Initialising curses window and all paramaters.
         '''
-        self.board will contain curses stdscr (window object). But it must be
-        a dummy at a start, before the curses is initialised.
-        '''
-        self.board = 0
-        self.screenx = screen[1]
-        self.screeny = screen[0]
+        self.stdscr = curses.initscr()                #starting curses screen
+        curses.noecho()                               #disabling input confirmation
+        curses.cbreak()                               #one char input
+        curses.curs_set(0)                            #making cursor non-visible
+        curses.start_color()                          #initialising colours
+        curses.use_default_colors()                   #initialising default colors
 
-    def initialize(self, stdscr):
-        '''
-        Setting up params for game board in curses window
-        '''
-        maxy, maxx = stdscr.getmaxyx()                #screen max_x and max_y
-        maxwiny = (maxy-self.screeny)//2              #window max_y
-        maxwinx = (maxx-self.screenx)//2              #window max_x
+        for i in range(1, 16):                        #generating color library     
+            curses.init_pair(i + 1, i, -1)            #there are 16 of it
 
-        self.board = curses.newwin(self.screeny,      #out actual window
-                                    self.screenx, 
-                                    maxwiny, 
-                                    maxwinx)  
-
-        self.board.clear()                            #cleaning the window
+        self.maxy, self.maxx = self.stdscr.getmaxyx() #getting max size of window            
+        self.board = curses.newwin(                   #creating curses window 
+                            screen[0],                #upper-left y coord      
+                            screen[1],                #upper-left x coord
+                            (self.maxy-screen[0])//2, #down-rigth y coord
+                            (self.maxx-screen[1])//2) #down-rigth x coord
+        self.board.clear()                            #cleaning the window  
         self.board.border()                           #printing board border
         self.board.timeout(100)                       #applying time 
         self.board.nodelay(1)                         #applying time
-        self.print_gen(0)                             #setting starting score                               
-    
+
     def inprint(self, snake):
-        '''
-        Function for printing snake on screen.
-        Visuals of snake is parametriased
+        '''Function for printing snake on screen.
         '''        
+        
         #head
-        self.board.addstr(snake.body[0][0],            #y coord
-                        snake.body[0][1],              #x coord
-                        heads_from[snake.direction],   #snake head ASCII symbol
-                        snake.color)                   #snake color
+        self.board.addstr(
+                    snake.body[0][0],                 #y coord
+                    snake.body[0][1],                 #x coord
+                    heads_from[snake.direction],      #snake head ASCII symbol
+                    curses.color_pair(snake.color))   #snake color
         
         #rest of the body 
         for part in snake.body[1:]:
-            self.board.addstr(part[0],                 #y coord
-                            part[1],                   #x coord
-                            snake_body,                #snake body ASCII symbol
-                            snake.color)               #snake color
+            self.board.addstr(
+                    part[0],                          #y coord
+                    part[1],                          #x coord
+                    snake_body,                       #snake body ASCII symbol
+                    curses.color_pair(snake.color))   #snake color
 
     def unprint(self, snake):
+        '''Function for erasing snake from screen
         '''
-        Function for erasing snake from screen
-        '''
-        for part in snake.body:
-            self.board.addstr(part[0], part[1], ' ')
+        for part in snake.body:                       #for every part of snake
+            self.board.addstr(part[0], part[1], ' ')  #space is printed
 
     def print_apple(self, apple):
-        '''
-        Function is putting apple sign on board. Coordinates is taken Apple
-        object
+        '''Function is putting apple sign on board.
         '''
         self.board.addstr(apple.coords[0][0],          #y coord 
                         apple.coords[0][1],            #x coord
                         snake_food,                    #apple ASCII symbol
-                        apple.color)                   #red
+                        curses.color_pair(apple.color))#apple color
 
     def print_gen(self, generation):
-        '''
-        Function for printing score on game board. Coords are fixed to
-        avoid problems.
+        '''Function for actual generation. Coords are fixed.
         '''
         self.board.addstr(0, 5, 'Generation:' + str(generation))

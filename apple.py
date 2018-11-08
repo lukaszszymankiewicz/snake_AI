@@ -9,7 +9,7 @@ class Apple(object):
     Method inside handles generating new apple on the boards
     '''
 
-    def __init__(self, screen, color):
+    def __init__(self, screen):
         '''
         self.coords - list on single tuple containing x and y coordinate.
         Because of using curses module, the coordinates is placed in a form:
@@ -18,8 +18,9 @@ class Apple(object):
         
         self.screenx = screen[1]
         self.screeny = screen[0]
-        self.color = color
-        self.coords = [(self.screenx//2, self.screeny//2)]
+        self.color = random.randint(1, 15)
+        self.coords = [(random.randint(1, self.screeny-2), 
+                        random.randint(1, self.screenx-2))]
 
     def generate(self, obstacles):
         '''

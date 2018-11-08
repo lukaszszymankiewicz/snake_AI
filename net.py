@@ -3,7 +3,7 @@
 
 import numpy as np
 from copy import deepcopy
-from matrices import *
+from matrices import randomize, sigmoid, add_bias
 
 class NeuralNetwork:
     def __init__(self, inp_nodes, hid_nodes, out_nodes):
@@ -28,18 +28,13 @@ class NeuralNetwork:
        self.weights_hidden = randomize(hid_nodes, hid_nodes)
        self.weigths_output = randomize(out_nodes, hid_nodes)
 
-    def add_bias(self, array):
-    	'''Adds 1 to the bottom of array
-    	'''
-    	return np.append(array, 1)
-
     def output(self, input):
         '''Generating neural net output
         TO DO: OPTIMIZE!
         '''
         #level one
         #add bias
-        input_biased = self.add_bias(np.array(input))
+        input_biased = add_bias(np.array(input))
 
         #apply weights
         hidden_inputs = np.dot(self.weigths_input, input_biased)
@@ -50,7 +45,7 @@ class NeuralNetwork:
 
         #level two
         #add bias
-        hidden_output_biased = self.add_bias(hidden_output)
+        hidden_output_biased = add_bias(hidden_output)
 
         #apply weights
         hidden_input2 = np.dot(self.weights_hidden, hidden_output_biased)
@@ -61,7 +56,7 @@ class NeuralNetwork:
         
         #level three
         #add bias
-        hidden_output2_biased = self.add_bias(hidden_output2)
+        hidden_output2_biased = add_bias(hidden_output2)
 
         #apply weights
         output_inputs = np.dot(self.weigths_output, hidden_output2_biased)
@@ -71,22 +66,21 @@ class NeuralNetwork:
 
         return list(outputs)
 
-    def save_to_file(self):
+    def save_to_file(self, filename):
         '''Unused
         '''
-        file = open('shape','w')        
-        file.write(str(self.weigths_input.shape))
-        file.close
-
-        file = open('weigths_input','w')        
+        name = 'weigths_input.txt'
+        file = open(name ,'a')        
         file.write(str(self.weigths_input))
         file.close
 
-        file = open('weights_hidden','w')        
+        name = 'weights_hidden.txt'
+        file = open(name,'a')        
         file.write(str(self.weights_hidden))
         file.close
-
-        file = open('weigths_output','w')        
+        
+        name = 'weigths_output.txt'
+        file = open(name,'a')        
         file.write(str(self.weigths_output))
         file.close
 
