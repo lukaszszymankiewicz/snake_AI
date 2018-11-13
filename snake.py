@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import numpy as np
+from random import randint
 
-RANDOM_RATE = 10
-
-directions_dict = {0:(-1,0), 1:(1,0), 2:(1,0), 3:(0,-1)}
+turning_dict = [(-1,0), (0,1), (1,0), (0,-1)]
 
 class Snake(object):
     '''Class for representing snake in a game.
@@ -39,10 +37,10 @@ class Snake(object):
         '''
         self.screenx = screen[1]                     
         self.screeny = screen[0]                     
-        self.body = [(st_coords[0], st_coords[1])] * 3 
-        self.head = (st_coords[0], st_coords[1])
+        self.body = [( randint(5,23), randint(5,23))] * 3 
+        self.head = self.body[0]
         self.direction = direction                    
-        self.color = random.randint(1,15)                           
+        self.color = randint(1,15)                           
         self.brain = brain                           
         self.lifespan = 200                          
         self.goodnes = 0                             
@@ -50,21 +48,28 @@ class Snake(object):
     def give_me_head(self):
         '''Calculates where snake head is heading (pun intented)
         '''
+        self.head = self.body[0]
+
+    def move_head(self):
+        '''Calculated head moved to new direction
+        '''
         self.head = (self.body[0][0] + self.direction[0], 
             self.body[0][1] + self.direction[1])
 
     def move(self, apple):
         '''Function for moving the snake.
-        '''
+        '''        
         
         #snake`s head moving
-        self.give_me_head()
+        self.move_head()
 
         #snakes`s tail moving
-        self.body = [self.head] + self.body[:-1]
+        self.body = [self.head] + self.body[:-1] 
+
+        self.give_me_head()
 
         #snake thinks
-        self.think_about_your_life(apple)         
+        self.think_about_your_life(apple)                
 
         #shortening lifespan
         self.lifespan -= 1    
@@ -91,53 +96,128 @@ class Snake(object):
         if self.body[0] in apple.coords:       
             apple.generate(self.body)
             self.body.append(self.body[-1])
+            self.lifespan += 15
+
+    def look_for_body(self):
+        '''Looking for snakes body in eigth directions
+        TODO: For goddamn sake. look_for_for body and look_for_food 
+        can be concat easyli!
+        '''
+        dirs = [(-1,0), (0, 1), (1, 0), (0,-1),       #horizontal/vertical 
+                (-1,1), (1,1), (1,-1),(-1,-1)]        #cross direction
+        
+        body_vectors = [0]*8
+            
+        for number, dir in enumerate(dirs, 0):
+            
+            searched_distance = 0
+            searched_coord = self.head[:]            
+
+            while searched_coord[0]>0 and searched_coord[1]>0 \
+            and searched_coord[0]<self.screeny and searched_coord[1]<self.screenx:
+
+                searched_coord = (searched_coord[0]+dir[0], searched_coord[1]+dir[1])    
+
+                if searched_coord in self.body:
+                    body_vectors[number] = searched_distance + 1
+                    break
+                    
+                searched_distance += 1
+
+        return body_vectors
+
+    def look_for_food(self, apple):
+        '''Looking for food body in eigth directions
+        '''
+        dirs = [(-1,0), (0, 1), (1, 0), (0,-1),       #horizontal/vertical 
+                (-1,1), (1,1), (1,-1),(-1,-1)]        #cross direction
+
+        apple_vectors = [0]*8               
+            
+        for number, dir in enumerate(dirs, 0):
+            
+            searched_distance = 0
+            searched_coord = self.head[:]            
+
+            while searched_coord[0]>0 and searched_coord[1]>0 \
+            and searched_coord[0]<self.screeny and searched_coord[1]<self.screenx:
+
+                searched_coord = (searched_coord[0]+dir[0], searched_coord[1]+dir[1])    
+
+                if searched_coord == apple:
+                    apple_vectors[number] = searched_distance + 1
+                    return apple_vectors
+                    
+                searched_distance += 1
+
+        return apple_vectors
 
     def look_around(self, apple):
         '''
         Function calculating obstacles in four direction from snakes head
-        TO DO: optimisation
+        Visions consists from 24 numbers. First eight are distances from walls,
+        next eight is distance from apple (0 if there isn`t apple in such direction),
+        ant the last eight are distances from snakes body (0 if there isn`t no
+        snake body in duch direction).
+
+        visions[0-7] - distance from snakes head to walls.
+            0-upper    4-upper,right
+            1-right    5-down,right
+            2-down     6-down,left
+            3-left     7-upper,left
+        First four is easy to catch - they are coded in heads coords.
+
+        visions[8-15] - distance beetwen snakes head and appple.
+            8-upper    12-upper,right
+            9-right    13-down,right
+            10-down    14-down,left
+            11-left    15-upper,left
+        First four is easy to catch - they are coded in heads coords.
+
+        visions[16-23] - distance beetwen snakes head its body.
+            16-upper    20-upper,right
+            17-right    21-down,right
+            18-down     22-down,left
+            19-left     23-upper,left
+        First four is easy to catch - they are coded in heads coords.
+
         '''
-        #apple.coords[0][0]  = y 
-        #apple.coords[0][1] = x
-        visions = [0]*6                               #clearing the visions
+        visions = [0]*8
+        apples = [0]*8
+        bodys = [0]*8                             
+        
+        #walls
+        
+        visions[0] = self.head[0]                     #distance from upper wall
+        visions[1] = self.screenx - self.head[1]      #distance from right wall
+        visions[2] = self.screeny - self.head[0]      #distance from down wall
+        visions[3] = self.head[1]                     #distance from left wall
+        
+        visions[4] = min(visions[0], visions[1])      #distance from upper-right wall
+        visions[5] = min(visions[2], visions[1])      #distance from down-right wall
+        visions[6] = min(visions[2], visions[3])      #distance from down-left wall
+        visions[7] = min(visions[0], visions[3])      #distance from upper-left wall        
 
-        visions[0] = self.head[1]                     #upper
-        visions[1] = self.screenx - self.head[1]      #right
-        visions[2] = self.screeny - self.head[0]      #down
-        visions[3] = self.head[0]                     #left
-        visions[4] = self.head[1] - apple.coords[0][1]
-        visions[5] = self.head[0] - apple.coords[0][0]
+        apples = self.look_for_food(apple)
+        bodys = self.look_for_body()
 
-        return visions
-
-    def negative_direction(self):
-        '''Generating negative direction of snake
-        '''
-        return (self.direction[0] * -1, self.direction[1] * -1)
+        return visions + apples + bodys
 
     def think_about_your_life(self, apple):
         '''Function making snake thinks about his life and
         his future
         '''
-        old_direction = tuple(self.direction)         #coping direction
         output = self.brain.output(self.look_around(apple))#neural net getting output
         
         #first best option
-        max_value = max(output)
-        max_value_index = output.index(max_value)
-        best_dir = directions_dict[max_value_index]
-        output.remove(max_value)  
+        max_value = np.argmax(output)
         
-        #second best option
-        sec_max_value = max(output)
-        sec_max_value_index = output.index(sec_max_value)
-        sec_best_dir = directions_dict[sec_max_value_index]
+        self.direction = turning_dict[max_value]
 
-        #cheking options (snake cannot turn 180 degrees!)
-        if best_dir == self.negative_direction():
-            self.direction = sec_best_dir
-        else:
-            self.direction = best_dir  
+    def starved(self):
+        '''Check if snake is starved to death
+        '''
+        return self.lifespan == 0 
 
     def rate(self):
         '''

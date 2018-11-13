@@ -33,12 +33,7 @@ class Game(object):
         while self.pressed_key != ord('q'):           #main while loop
 
             #PLAYER CONTROL SECTION
-            self.pressed_key = self.level.board.getch()#getting key from player
-            
-            #IS FUN OVER?           
-            if self.population.empty():               #checking if board has its winner
-                self.level.unprint(self.population.cpus[0])#erasing the winner
-                self.population.new_generation()      #winner is having a child            
+            self.pressed_key = self.level.board.getch()#getting key from player  
 
             #CPUs SECTIONS
             for cpu in self.population.cpus:
@@ -47,18 +42,31 @@ class Game(object):
                 cpu.move(self.morsel)                 #generating moves
 
                 if cpu.collides():                    #collision checking
-                    self.population.cpus.remove(cpu)  #if so - we erase it
-                
+                    self.population.cpus.remove(cpu)
+                    self.level.unprint(cpu)
+                                    
                 if cpu.eats(self.morsel):             #snake eats an apple
                     pass                              #temporarly disabled
+                
+                if cpu.starved():                     #if snake dies of
+                    self.population.cpus.remove(cpu)  #starvation
+                    self.level.unprint(cpu)           #it need to be killed
+
+            #IS FUN OVER?           
+            if self.population.empty():               #checking if board has its winner
+                self.level.unprint(self.population.cpus[0])
+                self.population.new_generation()      #winner is having a child  
 
             #SCREEN SECTION                           #printing everything out
             for cpu in self.population.cpus:          #printing every snake 
                 self.level.inprint(cpu)
+            
+            self.level.board.border()
+            self.level.print_aux(self.morsel,         #print nesseceties
+                self.population.generation)
 
-            self.level.print_apple(self.morsel)       #apple is printed on board            
-            self.level.print_gen(self.population.generation)     #printing score on board            
-            self.level.board.refresh()                #refreshing the screen            
+            self.level.board.refresh()                #refreshing the screen
+
             
     def main(self):
         curses.wrapper(self.game)

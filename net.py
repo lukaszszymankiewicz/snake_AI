@@ -8,7 +8,7 @@ from matrices import randomize, sigmoid, add_bias
 class NeuralNetwork:
     def __init__(self, inp_nodes, hid_nodes, out_nodes):
        '''
-       self.inp_nodes - number of input nodes. Right now - 8
+       self.inp_nodes - number of input nodes. Right now - 24
        self.hid_nodes - number of hidden layer nodes. Right now - 12
        self.out_nodes - number of output nodes. Right now - 4. It symbolize
        the direction in where snake can go.

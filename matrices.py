@@ -13,7 +13,7 @@ def sigmoid_derivative(x):
 def crossover(a, b, crossover_rate):
     '''crossover function
     '''
-    if np.random.randint(1,100)>crossover_rate:
+    if np.random.randint(1,100)<crossover_rate:
         return a #child value
     else:
         return b #parent value

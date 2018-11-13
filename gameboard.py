@@ -63,15 +63,13 @@ class GameBoard(object):
         for part in snake.body:                       #for every part of snake
             self.board.addstr(part[0], part[1], ' ')  #space is printed
 
-    def print_apple(self, apple):
+    def print_aux(self, apple, generation):
         '''Function is putting apple sign on board.
         '''
         self.board.addstr(apple.coords[0][0],          #y coord 
                         apple.coords[0][1],            #x coord
                         snake_food,                    #apple ASCII symbol
                         curses.color_pair(apple.color))#apple color
-
-    def print_gen(self, generation):
-        '''Function for actual generation. Coords are fixed.
-        '''
-        self.board.addstr(0, 5, 'Generation:' + str(generation))
+        
+        #generation        
+        self.board.addstr(0, 5, 'Gen:' + str(generation))

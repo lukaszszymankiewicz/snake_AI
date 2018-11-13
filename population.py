@@ -27,7 +27,7 @@ class Population(object):
     def reproduce(self, parent):
         '''
         Function for getting the best brain from last generation, mutate it and
-        prepere fror snakes children.
+        prepere for snakes children.
         Crossover function crosses two matrices randomly (chance for every value
         is 50%).
         Then the mutation is applied with chance equal to mutate rate
@@ -42,6 +42,7 @@ class Population(object):
         child.weights_hidden = crossover(child.weights_hidden, parent.weights_hidden, self.crossover_rate)
         child.weigths_output = crossover(child.weigths_output, parent.weigths_output, self.crossover_rate)
         
+        #no crossover
         #child.weigths_input = parent.weigths_input[:]
         #child.weights_hidden = parent.weights_hidden[:]
         #child.weigths_output = parent.weigths_output[:]
@@ -64,22 +65,22 @@ class Population(object):
     def empty(self):
         '''Checks if there is only one (and the best) snake on board
         '''
-        return len(self.cpus)==1
+        return len(self.cpus) == 1
 
     def first_generation(self):
         '''Function creating first generation of snakes
         '''
         self.cpus = []
         for i in range(self.population_size):            
-            self.cpus.append((self.new_snake(NeuralNetwork(6, 8, 4))))
+            self.cpus.append((self.new_snake(NeuralNetwork(24, 8, 4))))
 
     def new_generation(self):
         '''Function creating next generation of snakes
         '''
         self.generation +=1
 
-        parent = self.cpus.pop()                      #emping cpus list
-        parent.brain.save_to_file(filename = str(self.generation))
+        parent = self.cpus.pop()                      #emtping cpus list
+        #parent.brain.save_to_file(filename = str(self.generation))
         for i in range(self.population_size):             
             new_brain = self.reproduce(parent.brain)
             self.cpus.append(self.new_snake(new_brain))
